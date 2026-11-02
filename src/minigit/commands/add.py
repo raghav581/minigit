@@ -32,6 +32,8 @@ def run(args: argparse.Namespace, repo: Repository | None) -> int:
             sha = write_object(repo, (repo.worktree / path).read_bytes(), "blob")
             index.add(IndexEntry(FILE_MODE, sha, path))
     index.save(repo)
+    if "." in args.paths or any(Path(p) == Path(".") for p in args.paths):
+        print("All files are added")
     return 0
 
 

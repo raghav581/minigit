@@ -53,3 +53,41 @@ def test_detached_head(repo, run, write):
     commit = head_commit(repo)
     set_head(repo, commit, symbolic=False)
     assert run("status").out.startswith(f"HEAD detached at {commit[:7]}")
+
+
+def test_status_colors_when_tty(repo, run, write, monkeypatch):
+    import sys
+
+    monkeypatch.delenv("NO_COLOR", raising=False)
+    monkeypatch.setattr(sys.stdout, "isatty", lambda: True)
+
+    write("tracked.txt", "tracked\n")
+    run("add", "tracked.txt")
+    run("commit", "-m", "first")
+    write("tracked.txt", "modified\n")
+
+    write("staged.txt", "staged\n")
+    run("add", "staged.txt")
+
+    write("untracked.txt", "untracked\n")
+
+    out = run("status").out
+    assert "\t\033[32mnew file:   staged.txt\033[0m" in out
+    assert "\t\033[31mmodified:   tracked.txt\033[0m" in out
+    assert "\t\033[31muntracked.txt\033[0m" in out
+
+
+def test_status_no_color_flag(repo, run, write, monkeypatch):
+    import sys
+
+    monkeypatch.delenv("NO_COLOR", raising=False)
+    monkeypatch.setattr(sys.stdout, "isatty", lambda: True)
+
+    write("staged.txt", "staged\n")
+    run("add", "staged.txt")
+    write("untracked.txt", "untracked\n")
+
+    out = run("--no-color", "status").out
+    assert "\tnew file:   staged.txt" in out
+    assert "\tuntracked.txt" in out
+    assert "\033[" not in out
