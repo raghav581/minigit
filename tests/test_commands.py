@@ -237,9 +237,19 @@ def test_cat_file_unknown(repo, run):
 
 def test_add_file(repo, run, write):
     write("hello.txt", "hello\n")
-    assert run("add", "hello.txt").code == 0
+    result = run("add", "hello.txt")
+    assert result.code == 0
+    assert "hello.txt is staged" in result.out
     entry = Index.load(repo).get("hello.txt")
     assert entry.sha == HELLO_BLOB
+
+
+def test_add_file_colored_green_when_color_enabled(repo, run, write, monkeypatch):
+    monkeypatch.setattr("minigit.color._should_color", lambda: True)
+    write("hello.txt", "hello\n")
+    result = run("add", "hello.txt")
+    assert result.code == 0
+    assert "\033[32mhello.txt is staged\033[0m" in result.out
 
 
 def test_add_directory_recursively(repo, run, write):

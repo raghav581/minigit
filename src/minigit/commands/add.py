@@ -7,6 +7,7 @@ For each file, ``add`` stores its content as a blob object and records
 import argparse
 from pathlib import Path
 
+from minigit import color
 from minigit.errors import MinigitError
 from minigit.index import Index, IndexEntry
 from minigit.objects import FILE_MODE, write_object
@@ -31,6 +32,7 @@ def run(args: argparse.Namespace, repo: Repository | None) -> int:
         for path in _expand(repo, raw):
             sha = write_object(repo, (repo.worktree / path).read_bytes(), "blob")
             index.add(IndexEntry(FILE_MODE, sha, path))
+            print(color.green(f"{path} is staged"))
     index.save(repo)
     return 0
 
