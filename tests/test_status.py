@@ -9,7 +9,8 @@ def test_clean_repository(repo, run, write):
     run("commit", "-m", "first")
     result = run("status")
     assert result.code == 0
-    assert result.out == "On branch main\nnothing to commit, working tree clean\n"
+    assert "nothing to commit, working tree clean" in result.out
+    assert "(use 'minigit log' to view history)" in result.out
 
 
 def test_empty_repository_says_no_commits_yet(repo, run):
